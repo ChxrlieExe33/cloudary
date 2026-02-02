@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cloudary
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update

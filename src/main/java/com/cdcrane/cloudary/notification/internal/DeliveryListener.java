@@ -1,0 +1,32 @@
+package com.cdcrane.cloudary.notification.internal;
+
+import com.cdcrane.cloudary.users.events.AccountRegisteredEvent;
+import com.cdcrane.cloudary.users.events.EmailVerificationFailEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+@EnableAsync
+@RequiredArgsConstructor
+public class DeliveryListener {
+
+    private final EmailUseCase emailUseCase;
+
+    @ApplicationModuleListener
+    public void sendVerificationEmailOnSignup(AccountRegisteredEvent e) {
+
+        emailUseCase.sendVerificationEmail(e.email(), e.username(), e.generatedVerificationCode());
+
+    }
+
+    @ApplicationModuleListener
+    public void sendEmailAgainOnVerificationFail(EmailVerificationFailEvent e) {
+
+        emailUseCase.sendVerificationEmail(e.email(), e.username(), e.newVerificationCode());
+
+    }
+}
