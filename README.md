@@ -20,7 +20,11 @@ Files will be stored in S3.
 
 # How to run locally
 
-NOTE: I only just started this, so the stuff for S3 isn't in here yet.
+First, for a dev environment, set up aws locally, install the CLI, create an Access key with your IAM user.
+
+Then run `aws configure` on your machine, after that, create a bucket called `cloudary-files`, basic options are fine. And make sure your IAM user has permission to access S3 buckets or just that one.
+
+With that, S3 is configured, no environment variables or code changes are needed, and in production, it would use IAM roles on the resource it's deployed to.
 
 Run the docker compose for the dev setup.
 

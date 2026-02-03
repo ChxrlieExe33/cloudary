@@ -19,7 +19,6 @@ import java.util.UUID;
 public class UploadedFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID fileId;
 
     private UUID ownerId;

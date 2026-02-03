@@ -5,6 +5,8 @@ import com.cdcrane.cloudary.auth.exceptions.BadJwtException;
 import com.cdcrane.cloudary.auth.exceptions.TokenNotFoundException;
 import com.cdcrane.cloudary.config.dto.ExceptionErrorResponse;
 import com.cdcrane.cloudary.config.dto.ValidationErrorResponse;
+import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
+import com.cdcrane.cloudary.files.exceptions.S3UploadFailedException;
 import com.cdcrane.cloudary.users.exceptions.IdentityTakenException;
 import com.cdcrane.cloudary.users.exceptions.InvalidVerificationException;
 import com.cdcrane.cloudary.users.exceptions.UserAlreadyVerifiedException;
@@ -185,6 +187,35 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
 
+    }
+
+    // ---------------------------------------------------
+    // --------------- USER EXCEPTIONS -------------------
+    // ---------------------------------------------------
+
+    @ExceptionHandler(InvalidFileTypeException.class)
+    public ResponseEntity<ExceptionErrorResponse> handleInvalidFileType(InvalidFileTypeException ex) {
+
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(S3UploadFailedException.class)
+    public ResponseEntity<ExceptionErrorResponse> handleS3UploadFailed(S3UploadFailedException ex) {
+
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

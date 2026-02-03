@@ -8,7 +8,8 @@ import org.springframework.modulith.ApplicationModule;
 @ApplicationModule(
         allowedDependencies = {
             "auth::exceptions",
-            "users::exceptions"
+            "users::exceptions",
+            "files::exceptions"
         }
 )
 public class ConfigModule {
