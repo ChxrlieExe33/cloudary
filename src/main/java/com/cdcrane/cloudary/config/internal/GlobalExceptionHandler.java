@@ -6,7 +6,9 @@ import com.cdcrane.cloudary.auth.exceptions.TokenNotFoundException;
 import com.cdcrane.cloudary.config.dto.ExceptionErrorResponse;
 import com.cdcrane.cloudary.config.dto.ValidationErrorResponse;
 import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
+import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
 import com.cdcrane.cloudary.files.exceptions.S3UploadFailedException;
+import com.cdcrane.cloudary.files.exceptions.UploadedFileNotFoundException;
 import com.cdcrane.cloudary.users.exceptions.IdentityTakenException;
 import com.cdcrane.cloudary.users.exceptions.InvalidVerificationException;
 import com.cdcrane.cloudary.users.exceptions.UserAlreadyVerifiedException;
@@ -190,7 +192,7 @@ public class GlobalExceptionHandler {
     }
 
     // ---------------------------------------------------
-    // --------------- USER EXCEPTIONS -------------------
+    // --------------- FILE EXCEPTIONS -------------------
     // ---------------------------------------------------
 
     @ExceptionHandler(InvalidFileTypeException.class)
@@ -216,6 +218,31 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NotPermittedToAccessFile.class)
+    public ResponseEntity<ExceptionErrorResponse> handleNotPermittedToAccessFile(NotPermittedToAccessFile ex) {
+
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.FORBIDDEN.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.FORBIDDEN);
+
+    }
+
+    @ExceptionHandler(UploadedFileNotFoundException.class)
+    public ResponseEntity<ExceptionErrorResponse> handleUploadedFileNotFoundException(UploadedFileNotFoundException ex) {
+
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.NOT_FOUND.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
     }
 
 }

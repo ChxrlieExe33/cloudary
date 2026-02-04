@@ -1,8 +1,11 @@
 package com.cdcrane.cloudary.files.internal;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
-import com.cdcrane.cloudary.files.dto.UploadedFileData;
+import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
+import com.cdcrane.cloudary.files.dto.UploadedS3File;
 import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
+import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
+import com.cdcrane.cloudary.files.exceptions.UploadedFileNotFoundException;
 import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,7 @@ public class FileUploadService implements FileUploadUseCase{
 
         if (!this.isValidFile(file)) throw new InvalidFileTypeException("File type is not supported. Only text and PDF files are allowed.");
 
-        UploadedFileData data = fileStorageHandler.store(file, fileId);
+        UploadedS3File data = fileStorageHandler.store(file, fileId);
 
         UploadedFile fileEntry = UploadedFile.builder()
                 .fileId(fileId)
@@ -54,6 +57,37 @@ public class FileUploadService implements FileUploadUseCase{
         return new NewSavedFileDTO(fileId, file.getOriginalFilename());
 
     }
+
+    @Override
+    public RetrievedFileDTO retrieveFile(UUID fileId) {
+
+        UploadedFile file = uploadedFileRepo.findById(fileId)
+                .orElseThrow(() -> new UploadedFileNotFoundException("File with id " + fileId + " not found."));
+
+        UUID currentUserId = this.getUserIdFromToken();
+
+        // Check if they are the owner first.
+        boolean permitted = file.getOwnerId().equals(currentUserId);
+
+        // Otherwise, loop through the permitted users and compare the IDs to the current user.
+        if (!permitted) {
+            for (var permittedUser : file.getPermittedUsers()) {
+                if (permittedUser.getUserId().equals(currentUserId)) {
+                    permitted = true;
+                    break;
+                }
+            }
+        }
+
+        if (!permitted) throw new NotPermittedToAccessFile("User " + currentUserId + " is not permitted to access file " + fileId + " since they are not the owner or a permitted user.");
+
+        String url = fileStorageHandler.getFileUrl(file.getS3Key());
+
+        return new RetrievedFileDTO(fileId, url);
+
+    }
+
+
 
     private boolean isValidFile(MultipartFile file) {
 

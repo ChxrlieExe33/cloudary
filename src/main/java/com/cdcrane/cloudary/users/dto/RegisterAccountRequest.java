@@ -1,13 +1,12 @@
 package com.cdcrane.cloudary.users.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.Length;
 
-public record RegisterAccountRequest(@NotBlank @Max(150) String username,
-                                     @Max(150) @NotBlank String firstName,
-                                     @Max(150) @NotBlank String lastName,
-                                     @Max(150) @NotBlank @Email String email,
-                                     @Max(100) @Min(value = 8, message = "Password must be between 8 and 100 characters long.") String password) {
+public record RegisterAccountRequest(@NotBlank @Length(max = 150) String username,
+                                     @Length(max = 150) @NotBlank String firstName,
+                                     @Length(max = 150) @NotBlank String lastName,
+                                     @Length(max = 150) @NotBlank @Email String email,
+                                     @Length(min = 8, max = 100, message = "Password must be between 8 & 100 characters long.") String password) {
 }

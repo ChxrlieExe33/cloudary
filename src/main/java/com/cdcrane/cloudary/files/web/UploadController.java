@@ -1,12 +1,15 @@
 package com.cdcrane.cloudary.files.web;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
+import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.internal.FileUploadUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 
 @RestController
@@ -22,6 +25,15 @@ public class UploadController {
         var result = fileUploadUseCase.uploadFile(file);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+
+    }
+
+    @GetMapping("/{fileId}")
+    public ResponseEntity<RetrievedFileDTO> retrieveFile(@PathVariable UUID fileId) {
+
+        var result = fileUploadUseCase.retrieveFile(fileId);
+
+        return ResponseEntity.ok(result);
 
     }
 }

@@ -1,11 +1,13 @@
 package com.cdcrane.cloudary.files.internal;
 
-import com.cdcrane.cloudary.files.dto.UploadedFileData;
+import com.cdcrane.cloudary.files.dto.UploadedS3File;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
 public interface FileStorageHandler {
 
-    UploadedFileData store(MultipartFile file, UUID fileId);
+    UploadedS3File store(MultipartFile file, UUID fileId);
+
+    String getFileUrl(String key);
 }
