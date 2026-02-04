@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -51,6 +52,7 @@ class UserService implements UserUseCase {
     }
 
     @Override
+    @Cacheable(value = "users_by_id", key = "#id")
     public UserDTO findById(UUID id) {
 
         var u = userRepo.findByUserId(id)
