@@ -3,8 +3,11 @@ package com.cdcrane.cloudary.files.web;
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
 import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
+import com.cdcrane.cloudary.files.dto.SavedFileDTO;
 import com.cdcrane.cloudary.files.internal.FileUploadUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,15 @@ public class UploadController {
         var result = fileUploadUseCase.uploadFile(file);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<SavedFileDTO>> listMyFiles(Pageable pageable) {
+
+        var results = fileUploadUseCase.listMyFiles(pageable);
+
+        return ResponseEntity.ok(results);
 
     }
 

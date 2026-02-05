@@ -1,9 +1,6 @@
 package com.cdcrane.cloudary.files.internal;
 
-import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
-import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
-import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
-import com.cdcrane.cloudary.files.dto.UploadedS3File;
+import com.cdcrane.cloudary.files.dto.*;
 import com.cdcrane.cloudary.files.exceptions.CannotAddUsersToPermittedException;
 import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
 import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
@@ -14,6 +11,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,6 +90,17 @@ public class FileUploadService implements FileUploadUseCase{
         String url = fileStorageHandler.getFileUrl(file.getS3Key());
 
         return new RetrievedFileDTO(fileId, url);
+
+    }
+
+    @Override
+    public Page<SavedFileDTO> listMyFiles(Pageable pageable) {
+
+        var currentUserId = this.getUserIdFromToken();
+
+        Page<UploadedFile> files = uploadedFileRepo.findAllByOwnerIdOrderByMostRecent(currentUserId, pageable);
+
+        return files.map(f -> new SavedFileDTO(f.getFileId(), f.getFileName(), f.getSize(), f.getUploadedAt()));
 
     }
 
