@@ -1,11 +1,14 @@
 package com.cdcrane.cloudary.files.internal;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
+import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.dto.UploadedS3File;
+import com.cdcrane.cloudary.files.exceptions.CannotAddUsersToPermittedException;
 import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
 import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
 import com.cdcrane.cloudary.files.exceptions.UploadedFileNotFoundException;
+import com.cdcrane.cloudary.users.api.UserUseCase;
 import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +32,8 @@ public class FileUploadService implements FileUploadUseCase{
 
     private final FileStorageHandler fileStorageHandler;
     private final UploadedFileRepository uploadedFileRepo;
+    private final PermittedUserRepository permittedUserRepo;
+    private final UserUseCase userService;
 
     @Override
     @Transactional
@@ -87,6 +94,49 @@ public class FileUploadService implements FileUploadUseCase{
 
     }
 
+    @Override
+    @Transactional
+    public void grantAccessToFiles(PermitUsersFileAccessRequest request) {
+
+        UploadedFile file = uploadedFileRepo.findById(request.fileId())
+                .orElseThrow(() -> new UploadedFileNotFoundException("File with id " + request.fileId() + " not found."));
+
+        if (!this.getUserIdFromToken().equals(file.getOwnerId())) throw new NotPermittedToAccessFile("User " + getUserIdFromToken() + " is not permitted to grant access to file " + request.fileId() + " since they are not the owner.");
+
+        // Check that the users all exist.
+        var checkedUsers = userService.checkUsersExistByIds(request.permittedUsers());
+        List<UUID> nonExistingUsers = new ArrayList<>();
+
+        for (var entry : checkedUsers.entrySet()) {
+            // If false, add to the list.
+            if (!entry.getValue()) nonExistingUsers.add(entry.getKey());
+        }
+
+        if (!nonExistingUsers.isEmpty()) throw new CannotAddUsersToPermittedException("Users " + nonExistingUsers + " do not exist, so they cannot be granted permission. Please check the IDs and try again.");
+
+        // Get the existing permitted users (No N+1 since permittedUsers is fetched by EntityGraph).
+        List<UUID> alreadyPermittedUsers = file.getPermittedUsers().stream()
+                .map(PermittedUser::getUserId)
+                .toList();
+
+        // Create the permissions.
+        List<PermittedUser> userPermissions = new ArrayList<>();
+        for (var userId : request.permittedUsers()) {
+
+            if (alreadyPermittedUsers.contains(userId)) continue; // Don't duplicate entries, no need to throw an exception.
+
+            PermittedUser permission = PermittedUser.builder()
+                    .userId(userId)
+                    .fileId(file.getFileId())
+                    .build();
+
+            userPermissions.add(permission);
+
+        }
+
+        if (!userPermissions.isEmpty()) permittedUserRepo.saveAll(userPermissions); // Only cause the DB query if there are actually values.
+
+    }
 
 
     private boolean isValidFile(MultipartFile file) {

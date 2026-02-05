@@ -24,9 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,6 +154,26 @@ class UserService implements UserUseCase {
             userRepo.save(user);
 
         }
+
+    }
+
+    @Override
+    public Map<UUID, Boolean> checkUsersExistByIds(List<UUID> ids) {
+
+        Map<UUID, Boolean> result = new HashMap<>();
+        var existingUserIds = userRepo.findUsersThatExistByIds(ids);
+
+        for (var id : ids) {
+
+            if (existingUserIds.contains(id)){
+                result.put(id, true);
+            } else {
+                result.put(id, false);
+            }
+
+        }
+
+        return result;
 
     }
 

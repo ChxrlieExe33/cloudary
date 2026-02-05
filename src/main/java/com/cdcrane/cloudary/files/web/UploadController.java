@@ -1,6 +1,7 @@
 package com.cdcrane.cloudary.files.web;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
+import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.internal.FileUploadUseCase;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,15 @@ public class UploadController {
         var result = fileUploadUseCase.retrieveFile(fileId);
 
         return ResponseEntity.ok(result);
+
+    }
+
+    @PostMapping("/permit-access")
+    public ResponseEntity<Void> permitAccessToFiles(@RequestBody PermitUsersFileAccessRequest request) {
+
+        fileUploadUseCase.grantAccessToFiles(request);
+
+        return ResponseEntity.noContent().build();
 
     }
 }

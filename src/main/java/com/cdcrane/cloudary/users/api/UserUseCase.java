@@ -5,6 +5,8 @@ import com.cdcrane.cloudary.users.dto.UserDTO;
 import com.cdcrane.cloudary.users.dto.VerifyEmailRequest;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface UserUseCase extends UserDetailsService {
@@ -16,4 +18,6 @@ public interface UserUseCase extends UserDetailsService {
     void registerUser(RegisterAccountRequest request);
 
     void handleEmailVerification(VerifyEmailRequest request);
+
+    Map<UUID, Boolean> checkUsersExistByIds(List<UUID> ids);
 }
