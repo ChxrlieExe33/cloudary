@@ -6,6 +6,3 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/cloudary # Overwrite this with env variables
     username: postgres # No password since prod will use IAM roles for ECS to access the database.
-  jpa:
-    hibernate:
-      ddl-auto: validate

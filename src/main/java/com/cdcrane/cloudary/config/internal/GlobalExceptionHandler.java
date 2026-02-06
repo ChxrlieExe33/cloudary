@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
                 .timestamp(System.currentTimeMillis())
                 .build();
 
-        log.error("Uncaught exception: {}", ex.toString());
+        log.error("Uncaught exception: {}", ex.getMessage());
 
         return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
