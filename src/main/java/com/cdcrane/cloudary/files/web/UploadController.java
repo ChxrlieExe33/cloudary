@@ -50,6 +50,15 @@ public class UploadController {
 
     }
 
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable UUID fileId) {
+
+        fileUploadUseCase.deleteFile(fileId);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
     @PostMapping("/permit-access")
     public ResponseEntity<Void> permitAccessToFiles(@RequestBody PermitUsersFileAccessRequest request) {
 

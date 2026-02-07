@@ -18,5 +18,7 @@ public interface FileUploadUseCase {
 
     Page<SavedFileDTO> listMyFiles(Pageable pageable);
 
+    void deleteFile(UUID fileId);
+
     void grantAccessToFiles(PermitUsersFileAccessRequest request);
 }

@@ -9,5 +9,7 @@ public interface FileStorageHandler {
 
     UploadedS3File store(MultipartFile file, UUID fileId);
 
+    void deleteFile(String key);
+
     String getFileUrl(String key);
 }

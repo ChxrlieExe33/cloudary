@@ -106,6 +106,21 @@ public class FileUploadService implements FileUploadUseCase{
 
     @Override
     @Transactional
+    public void deleteFile(UUID fileId) {
+
+        UploadedFile file = uploadedFileRepo.findById(fileId)
+                .orElseThrow(() -> new UploadedFileNotFoundException("File with id " + fileId + " not found."));
+
+        if (!this.getUserIdFromToken().equals(file.getOwnerId())) throw new NotPermittedToAccessFile("User " + getUserIdFromToken() + " is not permitted to delete file " + fileId + " since they are not the owner.");
+
+        fileStorageHandler.deleteFile(file.getS3Key());
+
+        uploadedFileRepo.deleteById(fileId);
+
+    }
+
+    @Override
+    @Transactional
     public void grantAccessToFiles(PermitUsersFileAccessRequest request) {
 
         UploadedFile file = uploadedFileRepo.findById(request.fileId())
