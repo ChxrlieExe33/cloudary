@@ -24,4 +24,6 @@ public interface JwtUseCase {
     TokenPairResponse refreshBothTokens(String refreshToken);
 
     void persistNewRefreshToken(RefreshJwtData refreshJwtData);
+
+    void invalidateRefreshToken(String refreshToken);
 }

@@ -299,4 +299,29 @@ public class JwtService implements JwtUseCase {
 
     }
 
+    /**
+     * Delete a refresh token from the local DB, therefore invalidating it.
+     * No need to check ownership since the refresh token should be stored securely on the client.
+     * @param refreshToken The refresh token with no Bearer prefix.
+     */
+    @Override
+    @Transactional
+    public void invalidateRefreshToken(String refreshToken) {
+
+        // Check integrity and get claims.
+        var refreshClaims = this.verifyRefreshJwt(refreshToken);
+
+        if (!refreshClaims.get(NamedJwtClaims.TYPE.name()).equals(JwtTypes.REFRESH.name())) {
+            throw new BadJwtException("You must provide the refresh token to invalidate it, not an access token.");
+        }
+
+        UUID jti = UUID.fromString(refreshClaims.get(NamedJwtClaims.JTI.name(), String.class));
+
+        var token = refreshTokenRepo.findByJti(jti)
+                .orElseThrow(() -> new TokenNotFoundException("Refresh token not found on server, it has most likely been revoked already."));
+
+        refreshTokenRepo.delete(token);
+
+    }
+
 }

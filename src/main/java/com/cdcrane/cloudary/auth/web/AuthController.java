@@ -43,6 +43,24 @@ public class AuthController {
 
     }
 
+    /**
+     * Invalidate the refresh token provided in the Authorization header.
+     * @param refreshToken The refresh token.
+     * @return Nothing
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader(name = "Authorization") String refreshToken) {
+
+        if (!refreshToken.startsWith(BEARER)) {
+            throw new BadJwtException("Please follow the Bearer prefix format for tokens.");
+        }
+
+        jwtService.invalidateRefreshToken(refreshToken.substring(BEARER.length()));
+
+        return ResponseEntity.noContent().build();
+
+    }
+
     @GetMapping
     public String testProtected() {
 

@@ -2,7 +2,6 @@ package com.cdcrane.cloudary.auth.internal;
 
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
 import com.cdcrane.cloudary.auth.exceptions.BadAuthenticationException;
-import com.cdcrane.cloudary.users.api.UserUseCase;
 import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ public class AuthService {
 
     private final AuthenticationManager authManager;
     private final JwtUseCase jwtUseCase;
-    private final UserUseCase userUseCase;
 
     public TokenPairResponse login(String usernameOrEmail, String password) {
 
