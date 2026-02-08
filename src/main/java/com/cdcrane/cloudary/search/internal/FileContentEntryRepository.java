@@ -13,8 +13,10 @@ public interface FileContentEntryRepository extends JpaRepository<FileContentEnt
     @Query(value = """
         SELECT *, ts_rank(content_tsv, plainto_tsquery('english', :query)) AS RANK
         FROM file_contents
-        WHERE content_tsv @@ plainto_tsquery('english', :query)
+        WHERE
+            owner_id = :ownerId AND
+            content_tsv @@ plainto_tsquery('english', :query)
         ORDER BY rank DESC
     """, nativeQuery = true)
-    List<FileContentEntry> searchByContent(String query);
+    List<FileContentEntry> searchByContent(String query, UUID ownerId);
 }
