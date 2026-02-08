@@ -34,7 +34,7 @@ logging:
     root: warn
     com:
       cdcrane:
-        ekkochatsrv: info
+        cloudary: info
 
 aws:
   s3:

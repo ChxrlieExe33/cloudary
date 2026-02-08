@@ -25,6 +25,12 @@ public class FileContentEntry {
     @Column(nullable = false, name = "file_id")
     private UUID fileId;
 
+    @Column(nullable = false, name = "owner_id")
+    private UUID ownerId;
+
+    @Column(nullable = false, name = "file_name")
+    private String fileName;
+
     /**
      * This column in the db will contain the
      * postgres full-text search vector, indexed with GIN.

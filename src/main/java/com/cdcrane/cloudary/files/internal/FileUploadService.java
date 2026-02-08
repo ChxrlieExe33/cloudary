@@ -1,8 +1,9 @@
 package com.cdcrane.cloudary.files.internal;
 
+import com.cdcrane.cloudary.files.api.FileStorageHandler;
 import com.cdcrane.cloudary.files.dto.*;
+import com.cdcrane.cloudary.files.events.TextSearchableFileUploadedEvent;
 import com.cdcrane.cloudary.files.exceptions.CannotAddUsersToPermittedException;
-import com.cdcrane.cloudary.files.exceptions.InvalidFileTypeException;
 import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
 import com.cdcrane.cloudary.files.exceptions.UploadedFileNotFoundException;
 import com.cdcrane.cloudary.users.api.UserUseCase;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +35,7 @@ public class FileUploadService implements FileUploadUseCase{
     private final UploadedFileRepository uploadedFileRepo;
     private final PermittedUserRepository permittedUserRepo;
     private final UserUseCase userService;
+    private final ApplicationEventPublisher publisher;
 
     @Override
     @Transactional
@@ -41,8 +44,6 @@ public class FileUploadService implements FileUploadUseCase{
         var currentUserId = getUserIdFromToken();
 
         UUID fileId = UUID.randomUUID();
-
-        if (!this.isValidFile(file)) throw new InvalidFileTypeException("File type is not supported. Only text and PDF files are allowed.");
 
         UploadedS3File data = fileStorageHandler.store(file, fileId);
 
@@ -59,6 +60,11 @@ public class FileUploadService implements FileUploadUseCase{
                 .build();
 
         uploadedFileRepo.save(fileEntry);
+
+        // Only publish the event if it's a text-searchable file.
+        if (isTextSearchableFile(file)) publisher.publishEvent(new TextSearchableFileUploadedEvent(fileId, data.s3Key(), currentUserId, file.getOriginalFilename(), file.getContentType()));
+
+        log.info("File {} uploaded successfully.", fileId);
 
         return new NewSavedFileDTO(fileId, file.getOriginalFilename());
 
@@ -164,7 +170,7 @@ public class FileUploadService implements FileUploadUseCase{
     }
 
 
-    private boolean isValidFile(MultipartFile file) {
+    private boolean isTextSearchableFile(MultipartFile file) {
 
         try {
 
