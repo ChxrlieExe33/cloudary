@@ -17,6 +17,7 @@ public interface FileContentEntryRepository extends JpaRepository<FileContentEnt
             owner_id = :ownerId AND
             content_tsv @@ plainto_tsquery('english', :query)
         ORDER BY rank DESC
+        LIMIT 10
     """, nativeQuery = true)
     List<FileContentEntry> searchByContent(String query, UUID ownerId);
 }

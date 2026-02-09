@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
                 .timestamp(System.currentTimeMillis())
                 .build();
 
-        log.error("Uncaught exception: {}", ex.getMessage());
+        log.error("Uncaught exception of type {}: {}", ex.getClass(), ex.getMessage());
 
         return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -57,6 +58,18 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(res, HttpStatus.NOT_FOUND);
 
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ExceptionErrorResponse> handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
+
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
     }
 
     /**

@@ -2,17 +2,22 @@ package com.cdcrane.cloudary.search.internal;
 
 import com.cdcrane.cloudary.files.api.FileStorageHandler;
 import com.cdcrane.cloudary.files.events.TextSearchableFileUploadedEvent;
+import com.cdcrane.cloudary.search.dto.FileSearchResult;
+import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +68,19 @@ public class FileContentSearchService implements FileContentSearchUseCase{
 
     }
 
+    @Override
+    public List<FileSearchResult> searchByContent(String query) {
+
+        UUID currentUserId = getUserIdFromToken();
+
+        List<FileContentEntry> results = fileContentEntryRepo.searchByContent(query, currentUserId);
+
+        return results.stream()
+                .map(e -> new FileSearchResult(e.getFileId(), e.getFileName(), e.getContent()))
+                .toList();
+
+    }
+
     private String extractTextFromPdf(InputStream inputStream) throws IOException {
 
         try (PDDocument doc = Loader.loadPDF(inputStream.readAllBytes())) {
@@ -73,6 +91,18 @@ public class FileContentSearchService implements FileContentSearchUseCase{
 
     private String extractTextFromTextFile(InputStream inputStream) throws IOException {
         return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    private UUID getUserIdFromToken() {
+
+        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal == null) {
+            throw new IllegalStateException("Principal is null."); // TODO: Translate to domain exception later.
+        }
+
+        return principal.getUserId();
+
     }
 
 }
