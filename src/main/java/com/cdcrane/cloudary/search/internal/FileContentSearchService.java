@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -69,13 +71,28 @@ public class FileContentSearchService implements FileContentSearchUseCase{
     }
 
     @Override
-    public List<FileSearchResult> searchByContent(String query) {
+    public List<FileSearchResult> searchByContentOwnedByCurrentUser(String query) {
 
         UUID currentUserId = getUserIdFromToken();
 
-        List<FileContentEntry> results = fileContentEntryRepo.searchByContent(query, currentUserId);
+        List<FileContentEntry> results = fileContentEntryRepo.searchByContentAndOwnerId(query, currentUserId);
 
         return results.stream()
+                .map(e -> new FileSearchResult(e.getFileId(), e.getFileName(), e.getContent()))
+                .toList();
+
+    }
+
+    @Override
+    public List<FileSearchResult> searchByFilenameOwnedByCurrentUser(String query) {
+
+        UUID currentUserId = getUserIdFromToken();
+
+        var pageReq = PageRequest.of(0, 10);
+
+        Page<FileContentEntry> results = fileContentEntryRepo.searchByFileNameAndOwnerId(query, currentUserId, pageReq);
+
+        return results
                 .map(e -> new FileSearchResult(e.getFileId(), e.getFileName(), e.getContent()))
                 .toList();
 

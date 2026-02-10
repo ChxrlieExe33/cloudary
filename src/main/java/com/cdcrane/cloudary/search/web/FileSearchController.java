@@ -22,10 +22,18 @@ public class FileSearchController {
     @GetMapping("/by-content")
     public ResponseEntity<List<FileSearchResult>> searchByContent(@RequestParam @NotBlank String query) {
 
-        var results = fileContentSearchUseCase.searchByContent(query);
+        var results = fileContentSearchUseCase.searchByContentOwnedByCurrentUser(query);
 
         return ResponseEntity.ok(results);
 
+    }
+
+    @GetMapping("/by-filename")
+    public ResponseEntity<List<FileSearchResult>> searchByFilename(@RequestParam @NotBlank String query) {
+
+        var results = fileContentSearchUseCase.searchByFilenameOwnedByCurrentUser(query);
+
+        return ResponseEntity.ok(results);
     }
 
 }

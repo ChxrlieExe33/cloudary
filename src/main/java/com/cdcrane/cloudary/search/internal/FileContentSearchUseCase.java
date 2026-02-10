@@ -9,5 +9,7 @@ public interface FileContentSearchUseCase {
 
     void saveNewEntry(TextSearchableFileUploadedEvent data);
 
-    List<FileSearchResult> searchByContent(String query);
+    List<FileSearchResult> searchByContentOwnedByCurrentUser(String query);
+
+    List<FileSearchResult> searchByFilenameOwnedByCurrentUser(String query);
 }
