@@ -21,11 +21,12 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_URIS = {
             "/error",
+            "/actuator/health",
             "/api/v1/auth/login",
             "/api/v1/user/register",
             "/api/v1/user/verify",
-            "/api/v1/auth/refresh",
-            "/api/v1/auth/logout",
+            "/api/v1/auth/refresh", // Doesn't use the access tokens, accepts refresh token.
+            "/api/v1/auth/logout", // Accepts refresh token instead to invalidate it.
     };
 
     @Bean
