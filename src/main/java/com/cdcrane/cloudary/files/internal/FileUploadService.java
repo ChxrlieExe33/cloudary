@@ -45,7 +45,7 @@ public class FileUploadService implements FileUploadUseCase{
 
         UUID fileId = UUID.randomUUID();
 
-        UploadedS3File data = fileStorageHandler.store(file, fileId);
+        UploadedS3File data = fileStorageHandler.store(file, fileId, currentUserId);
 
         UploadedFile fileEntry = UploadedFile.builder()
                 .fileId(fileId)

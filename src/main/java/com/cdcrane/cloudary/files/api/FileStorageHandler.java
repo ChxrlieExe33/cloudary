@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface FileStorageHandler {
 
-    UploadedS3File store(MultipartFile file, UUID fileId);
+    UploadedS3File store(MultipartFile file, UUID fileId, UUID ownerId);
 
     void deleteFile(String key);
 

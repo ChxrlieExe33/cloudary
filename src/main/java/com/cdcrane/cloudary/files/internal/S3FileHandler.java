@@ -30,11 +30,11 @@ public class S3FileHandler implements FileStorageHandler {
     public String bucketName;
 
     @Override
-    public UploadedS3File store(MultipartFile file, UUID fileId) {
+    public UploadedS3File store(MultipartFile file, UUID fileId, UUID ownerId) {
 
         try {
 
-            String key = fileId.toString() + "-" + file.getOriginalFilename();
+            String key = ownerId.toString() + "/" + fileId.toString() + "-" + file.getOriginalFilename();
 
             PutObjectRequest req = PutObjectRequest.builder()
                     .bucket(this.bucketName)

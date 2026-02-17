@@ -29,6 +29,9 @@ spring:
     password: PleaseOverwriteWithEnvVariables
     host: smtp.gmail.com
     port: 587
+  threads:
+    virtual:
+      enabled: true
 logging:
   level:
     root: warn
