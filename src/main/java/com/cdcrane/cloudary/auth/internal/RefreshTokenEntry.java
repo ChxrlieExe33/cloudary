@@ -25,4 +25,6 @@ public class RefreshTokenEntry {
     private String hashedToken;
 
     private Date expiry;
+
+    private UUID userId;
 }

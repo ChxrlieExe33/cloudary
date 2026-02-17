@@ -234,40 +234,16 @@ public class JwtService implements JwtUseCase {
 
         UUID userId = UUID.fromString(userIdString);
 
-        // Need to get user account from the database since the SecurityContext won't be populated.
+        // Need to get user data from the database since the SecurityContext won't be populated.
         UserDTO user = userService.findById(userId);
 
         var newAccessTokenData = this.createAccessJwt(user.username(), user.authorities(), userId);
-
         var newRefreshTokenData = this.createRefreshJwt(userId);
 
-        try {
+        persistNewRefreshToken(newRefreshTokenData);
+        refreshTokenRepo.delete(originalRefreshEntry);
 
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-            byte[] hashBytes = digest.digest(
-                    (newRefreshTokenData.refreshJwt() + this.refreshTokenStoragePepper)
-                            .getBytes(StandardCharsets.UTF_8)
-            );
-
-            var hashedRefreshToken = Base64.getEncoder().encodeToString(hashBytes);
-
-            RefreshTokenEntry newRefreshEntry = RefreshTokenEntry.builder()
-                    .jti(newRefreshTokenData.jti())
-                    .hashedToken(hashedRefreshToken)
-                    .expiry(newRefreshTokenData.expiration())
-                    .build();
-
-            // Delete the old refresh token, then save new one.
-            refreshTokenRepo.delete(originalRefreshEntry);
-            refreshTokenRepo.save(newRefreshEntry);
-
-            return new  TokenPairResponse(newAccessTokenData, newRefreshTokenData);
-
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Hash type for refresh token storage is wrong!");
-        }
+        return new TokenPairResponse(newAccessTokenData, newRefreshTokenData);
 
     }
 
@@ -289,6 +265,7 @@ public class JwtService implements JwtUseCase {
                     .jti(refreshJwtData.jti())
                     .hashedToken(hashedRefreshToken)
                     .expiry(refreshJwtData.expiration())
+                    .userId(refreshJwtData.userId())
                     .build();
 
             refreshTokenRepo.save(newRefreshEntry);
