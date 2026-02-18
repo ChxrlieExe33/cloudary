@@ -50,7 +50,7 @@ jwt:
   access_jwt_secret: SuperSecretAccessJwtEncryptionKeyYouShouldOverwriteWithEnvVariables
   refresh_jwt_secret: SuperSecretRefreshJwtEncryptionKeyYouShouldOverwriteWithEnvVariables
   refresh_token_storage_pepper: PepperForTheStorageTokens
-  issuer: EkkoChatSRV
+  issuer: Cloudary
   refresh_expiration: 432000000 # 5d only for the refresh token
   access_expiration: 1200000 # 20m for access token, overwrite with env variables to be shorter for prod.
 
