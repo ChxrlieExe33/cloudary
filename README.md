@@ -2,13 +2,11 @@
 
 Cloudary is a file storage platform, which I am building to improve my cloud skills.
 
-The idea is basically a text-based file storage platform, where you can upload files, like txt, code files, markdown, PDF, etc.
+The idea is basically a file storage platform, where you can upload files of most if not all types. Files will be stored in S3
 
-Once uploaded, a background job or maybe even a lambda (I haven't decided yet) will extract all text from the file and save it into elasticsearch.
+When a text-based file is uploaded, an event is published and an async module listener retrieves the file from S3, and scrapes all the text from it, then saves this into a separate Postgres table which has full text search using *ts_vector*.
 
 With that, the user can do a full-text search for a file containing a specific string.
-
-Files will be stored in S3.
 
 # Infrastructure
 

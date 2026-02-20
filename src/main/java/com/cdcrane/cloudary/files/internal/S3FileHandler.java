@@ -26,7 +26,7 @@ public class S3FileHandler implements FileStorageHandler {
 
     private final S3Client s3Client; // Bean created in config::internal
 
-    @Value( "${aws.s3.uploads-bucket-name}")
+    @Value( "${aws.s3.uploads_bucket_name}")
     public String bucketName;
 
     @Override

@@ -41,7 +41,7 @@ logging:
 
 aws:
   s3:
-    uploads-bucket-name: cloudary-files
+    uploads_bucket_name: cloudary-files
 
 app:
   frontend-base-url: http://localhost:4200/
