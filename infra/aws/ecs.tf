@@ -19,7 +19,7 @@ resource "aws_ecs_task_definition" "app_task_def" {
   cpu = "1024"
   memory = "3072"
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
-  task_role_arn = aws_iam_role.ecs_execution_role.arn
+  task_role_arn = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -97,7 +97,7 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-# Allows ecs to assume a role.
+# For container creation, and retrieving data.
 resource "aws_iam_role" "ecs_execution_role" {
 
   name = "ecsTaskExecutionRole"
@@ -117,4 +117,20 @@ resource "aws_iam_role" "ecs_execution_role" {
 resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# For application to access aws resources such as S3.
+resource "aws_iam_role" "ecs_task_role" {
+
+  name = "ecsTaskRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service : "ecs-tasks.amazonaws.com"}
+      Action = "sts:AssumeRole"
+    }]
+  })
+
 }

@@ -10,18 +10,23 @@ import com.cdcrane.cloudary.users.exceptions.IdentityTakenException;
 import com.cdcrane.cloudary.users.exceptions.InvalidVerificationException;
 import com.cdcrane.cloudary.users.exceptions.UserAlreadyVerifiedException;
 import com.cdcrane.cloudary.users.exceptions.UserNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @ControllerAdvice
 @Slf4j
@@ -35,13 +40,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionErrorResponse> handleException(Exception ex){
 
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = Objects.requireNonNull(attributes).getRequest(); // Request will not be null since the global exception handler only catches in a HTTP request context.
+
+        String currentUsername = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+
         ExceptionErrorResponse res = ExceptionErrorResponse.builder()
                 .message("An unexpected error occurred, please contact support.")
                 .errorCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .timestamp(System.currentTimeMillis())
                 .build();
 
-        log.error("Uncaught exception of type {}: {}", ex.getClass(), ex.getMessage());
+        log.error("Uncaught exception of type {} occurred in a request to '{}' by user '{}' with message: '{}", ex.getClass(), request.getRequestURI(), currentUsername, ex.getMessage(), ex);
 
         return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
     }
