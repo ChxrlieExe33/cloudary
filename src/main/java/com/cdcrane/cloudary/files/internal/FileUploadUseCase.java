@@ -1,7 +1,7 @@
 package com.cdcrane.cloudary.files.internal;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
-import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
+import com.cdcrane.cloudary.files.dto.UpdateUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.dto.SavedFileDTO;
 import org.springframework.data.domain.Page;
@@ -20,5 +20,7 @@ public interface FileUploadUseCase {
 
     void deleteFile(UUID fileId);
 
-    void grantAccessToFiles(PermitUsersFileAccessRequest request);
+    void grantAccessToFile(UpdateUsersFileAccessRequest request);
+
+    void revokeAccessToFile(UpdateUsersFileAccessRequest request);
 }

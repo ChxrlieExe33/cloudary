@@ -6,6 +6,7 @@ import com.cdcrane.cloudary.files.events.TextSearchableFileUploadedEvent;
 import com.cdcrane.cloudary.files.exceptions.CannotAddUsersToPermittedException;
 import com.cdcrane.cloudary.files.exceptions.NotPermittedToAccessFile;
 import com.cdcrane.cloudary.files.exceptions.UploadedFileNotFoundException;
+import com.cdcrane.cloudary.files.exceptions.UserNotInPermittedListException;
 import com.cdcrane.cloudary.users.api.UserUseCase;
 import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.transaction.Transactional;
@@ -21,10 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -127,7 +126,7 @@ public class FileUploadService implements FileUploadUseCase{
 
     @Override
     @Transactional
-    public void grantAccessToFiles(PermitUsersFileAccessRequest request) {
+    public void grantAccessToFile(UpdateUsersFileAccessRequest request) {
 
         UploadedFile file = uploadedFileRepo.findById(request.fileId())
                 .orElseThrow(() -> new UploadedFileNotFoundException("File with id " + request.fileId() + " not found."));
@@ -135,7 +134,7 @@ public class FileUploadService implements FileUploadUseCase{
         if (!this.getUserIdFromToken().equals(file.getOwnerId())) throw new NotPermittedToAccessFile("User " + getUserIdFromToken() + " is not permitted to grant access to file " + request.fileId() + " since they are not the owner.");
 
         // Check that the users all exist.
-        var checkedUsers = userService.checkUsersExistByIds(request.permittedUsers());
+        var checkedUsers = userService.checkUsersExistByIds(request.userIds());
         List<UUID> nonExistingUsers = new ArrayList<>();
 
         for (var entry : checkedUsers.entrySet()) {
@@ -145,14 +144,14 @@ public class FileUploadService implements FileUploadUseCase{
 
         if (!nonExistingUsers.isEmpty()) throw new CannotAddUsersToPermittedException("Users " + nonExistingUsers + " do not exist, so they cannot be granted permission. Please check the IDs and try again.");
 
-        // Get the existing permitted users (No N+1 since permittedUsers is fetched by EntityGraph).
+        // Get the existing permitted users (No N+1 since userIds is fetched by EntityGraph).
         List<UUID> alreadyPermittedUsers = file.getPermittedUsers().stream()
                 .map(PermittedUser::getUserId)
                 .toList();
 
         // Create the permissions.
         List<PermittedUser> userPermissions = new ArrayList<>();
-        for (var userId : request.permittedUsers()) {
+        for (var userId : request.userIds()) {
 
             if (alreadyPermittedUsers.contains(userId)) continue; // Don't duplicate entries, no need to throw an exception.
 
@@ -166,6 +165,37 @@ public class FileUploadService implements FileUploadUseCase{
         }
 
         if (!userPermissions.isEmpty()) permittedUserRepo.saveAll(userPermissions); // Only cause the DB query if there are actually values.
+
+    }
+
+    @Override
+    @Transactional
+    public void revokeAccessToFile(UpdateUsersFileAccessRequest request) {
+
+        UploadedFile file = uploadedFileRepo.findById(request.fileId())
+                .orElseThrow(() -> new UploadedFileNotFoundException("File with id " + request.fileId() + " not found."));
+
+        if (!this.getUserIdFromToken().equals(file.getOwnerId())) throw new NotPermittedToAccessFile("User " + getUserIdFromToken() + " is not permitted to revoke access to file " + request.fileId() + " since they are not the owner.");
+
+        // Get just the IDs of the already permitted users.
+        List<UUID> alreadyPermittedUserIds = file.getPermittedUsers().stream()
+                .map(PermittedUser::getUserId)
+                .toList();
+
+        // Find user IDs that didn't have access already.
+        List<UUID> usersWithoutAccess = request.userIds().stream()
+                .filter(uid -> !alreadyPermittedUserIds.contains(uid))
+                .toList();
+
+        if (!usersWithoutAccess.isEmpty()) throw new UserNotInPermittedListException("Users with ids " + usersWithoutAccess + " were not permitted, so they cannot be removed.");
+
+        // Build the set of permitted users filtering out any that are in the request to be revoked.
+        Set<UUID> toRemove = file.getPermittedUsers().stream()
+                .map(PermittedUser::getUserId)
+                .filter(userId -> request.userIds().contains(userId))
+                .collect(Collectors.toSet());
+
+        permittedUserRepo.deleteAllByFileIdAndUserIdIn(file.getFileId(), toRemove);
 
     }
 

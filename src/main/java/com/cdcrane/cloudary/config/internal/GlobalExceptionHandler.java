@@ -278,4 +278,15 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(UserNotInPermittedListException.class)
+    public ResponseEntity<ExceptionErrorResponse>  handleUserNotInPermittedListException(UserNotInPermittedListException ex) {
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+    }
+
 }

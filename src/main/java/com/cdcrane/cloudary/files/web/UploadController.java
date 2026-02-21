@@ -1,7 +1,7 @@
 package com.cdcrane.cloudary.files.web;
 
 import com.cdcrane.cloudary.files.dto.NewSavedFileDTO;
-import com.cdcrane.cloudary.files.dto.PermitUsersFileAccessRequest;
+import com.cdcrane.cloudary.files.dto.UpdateUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.dto.SavedFileDTO;
 import com.cdcrane.cloudary.files.internal.FileUploadUseCase;
@@ -60,9 +60,18 @@ public class UploadController {
     }
 
     @PostMapping("/permit-access")
-    public ResponseEntity<Void> permitAccessToFiles(@RequestBody PermitUsersFileAccessRequest request) {
+    public ResponseEntity<Void> permitAccessToFiles(@RequestBody UpdateUsersFileAccessRequest request) {
 
-        fileUploadUseCase.grantAccessToFiles(request);
+        fileUploadUseCase.grantAccessToFile(request);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
+    @PostMapping("/revoke-access")
+    public ResponseEntity<Void> revokeAccessToFiles(@RequestBody UpdateUsersFileAccessRequest request) {
+
+        fileUploadUseCase.revokeAccessToFile(request);
 
         return ResponseEntity.noContent().build();
 
