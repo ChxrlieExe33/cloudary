@@ -5,6 +5,7 @@ import com.cdcrane.cloudary.files.dto.UpdateUsersFileAccessRequest;
 import com.cdcrane.cloudary.files.dto.RetrievedFileDTO;
 import com.cdcrane.cloudary.files.dto.SavedFileDTO;
 import com.cdcrane.cloudary.files.internal.FileUploadUseCase;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,7 +61,7 @@ public class UploadController {
     }
 
     @PostMapping("/permit-access")
-    public ResponseEntity<Void> permitAccessToFiles(@RequestBody UpdateUsersFileAccessRequest request) {
+    public ResponseEntity<Void> permitAccessToFiles(@RequestBody @Valid UpdateUsersFileAccessRequest request) {
 
         fileUploadUseCase.grantAccessToFile(request);
 
@@ -69,7 +70,7 @@ public class UploadController {
     }
 
     @PostMapping("/revoke-access")
-    public ResponseEntity<Void> revokeAccessToFiles(@RequestBody UpdateUsersFileAccessRequest request) {
+    public ResponseEntity<Void> revokeAccessToFiles(@RequestBody @Valid UpdateUsersFileAccessRequest request) {
 
         fileUploadUseCase.revokeAccessToFile(request);
 
