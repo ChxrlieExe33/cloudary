@@ -12,6 +12,8 @@ With that, the user can do a full-text search for a file containing a specific s
 
 Under the `infra` directory I have started to build out the future production architecture using terraform, over time this will evolve into a real production ready architecture.
 
+<img src="cloudary_aws.png" alt="AWS infrastructure diagram.">
+
 # Details
 
 - Development environment will use docker compose postgres, but production will use RDS postgres, authenticated via IAM roles.
