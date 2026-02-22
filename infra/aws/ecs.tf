@@ -34,12 +34,19 @@ resource "aws_ecs_task_definition" "app_task_def" {
         { name = "SPRING_DATA_REDIS_HOST", value = aws_elasticache_cluster.cloudary_cache.cache_nodes[0].address },
         { name = "AWS_S3_UPLOADS_BUCKET_NAME", value = aws_s3_bucket.cloudary_uploads_bucket.bucket },
         { name  = "JAVA_TOOL_OPTIONS", value = "-Xms512m -Xmx1024m" }
-        # TODO: Add email creds using SSM, provided via variables.
       ]
       secrets = [
         {
           name = "SPRING_DATASOURCE_PASSWORD"
           valueFrom = aws_ssm_parameter.rds_master_pass.arn
+        },
+        {
+          name = "SPRING_MAIL_USERNAME",
+          valueFrom = aws_ssm_parameter.cloudary_email.arn
+        },
+        {
+          name = "SPRING_MAIL_PASSWORD",
+          valueFrom = aws_ssm_parameter.cloudary_email_password.arn
         }
       ]
       essential = true

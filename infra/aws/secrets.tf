@@ -4,6 +4,18 @@ resource "aws_ssm_parameter" "rds_master_pass" {
   value = random_password.db_master_pass.result
 }
 
+resource "aws_ssm_parameter" "cloudary_email" {
+  name = "/cloudary/prod/email/username"
+  type = "SecureString"
+  value = var.cloudary_email
+}
+
+resource "aws_ssm_parameter" "cloudary_email_password" {
+  name = "/cloudary/prod/email/password"
+  type = "SecureString"
+  value = var.cloudary_email_password
+}
+
 resource "aws_iam_policy" "ecs_db_pass_policy" {
   name = "ecs-ssm-access"
 
@@ -16,7 +28,11 @@ resource "aws_iam_policy" "ecs_db_pass_policy" {
           "ssm:GetParameter",
           "ssm:GetParameters"
         ]
-        Resource = aws_ssm_parameter.rds_master_pass.arn
+        Resource = [
+          aws_ssm_parameter.rds_master_pass.arn,
+          aws_ssm_parameter.cloudary_email.arn,
+          aws_ssm_parameter.cloudary_email_password.arn
+        ]
       },
       {
         Effect = "Allow"

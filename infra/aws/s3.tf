@@ -30,7 +30,7 @@ resource "aws_iam_policy" "ecs_bucket_policy" {
           "s3:PutObject",
           "s3:DeleteObject"
         ]
-        Resource = aws_s3_bucket.cloudary_uploads_bucket.arn
+        Resource = "${aws_s3_bucket.cloudary_uploads_bucket.arn}/*"
       },
       {
         Effect = "Allow"
