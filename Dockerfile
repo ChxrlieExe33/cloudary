@@ -39,9 +39,11 @@ USER spring
 # JVM tuning for containers
 ENV JAVA_OPTS="\
   -XX:+UseContainerSupport \
-  -XX:MaxRAMPercentage=75.0 \
-  -XX:+UseZGC \
-  -XX:+ZGenerational \
+  -XX:MaxRAMPercentage=60 \
+  -XX:InitialRAMPercentage=30 \
+  -XX:MaxMetaspaceSize=384m \
+  -XX:MaxDirectMemorySize=256m \
+  -XX:+UseG1GC \
   -Djava.security.egd=file:/dev/./urandom \
   -Dspring.backgroundpreinitializer.ignore=true"
 
