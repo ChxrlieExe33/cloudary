@@ -27,6 +27,7 @@ public class SecurityConfig {
             "/api/v1/user/verify",
             "/api/v1/auth/refresh", // Doesn't use the access tokens, accepts refresh token.
             "/api/v1/auth/logout", // Accepts refresh token instead to invalidate it.
+            "/actuator/prometheus"
     };
 
     @Bean
