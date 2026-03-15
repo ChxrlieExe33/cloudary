@@ -25,9 +25,9 @@ resource "aws_ecs_task_definition" "app_task_def" {
     {
       name = "cloudary-app"
       image = "public.ecr.aws/a2f9s1p8/cdcrane/cloudary:latest"
-      portMappings = [{
-        containerPort = 8080
-      }]
+      portMappings = [
+        { containerPort = 8080, protocol = "tcp"}, {containerPort = 9080, protocol = "tcp"} # Needs the mapping for 9080 too so that the ALB can access the health check.
+      ]
       environment = [
         { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${aws_db_instance.cloudary_rds.address}:5432/${aws_db_instance.cloudary_rds.db_name}" },
         { name = "SPRING_DATASOURCE_USERNAME", value = aws_db_instance.cloudary_rds.username },
@@ -92,6 +92,13 @@ resource "aws_security_group" "ecs_sg" {
   ingress {
     from_port = 8080
     to_port = 8080
+    protocol = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  ingress { # Separate ingress rule for actuator management port.
+    from_port = 9080
+    to_port = 9080
     protocol = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
