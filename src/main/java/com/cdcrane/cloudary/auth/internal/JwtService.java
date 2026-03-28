@@ -308,10 +308,11 @@ public class JwtService implements JwtUseCase {
     @Transactional
     public void invalidateRefreshToken(UUID jti) {
 
-        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (principal == null) {
-            throw new BadAuthenticationException("Principal is null, authentication is malformed.");
+        // Check if Auth is null OR if the Principal isn't the custom principal.
+        if (auth == null || !(auth.getPrincipal() instanceof CloudaryUserPrincipal principal)) {
+            throw new BadAuthenticationException("User is not authenticated or principal is malformed.");
         }
 
         var refreshToken = refreshTokenRepo.findByJti(jti)

@@ -11,6 +11,7 @@ import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,10 +70,11 @@ public class AuthController {
     @GetMapping("/sessions")
     public ResponseEntity<List<JwtClientSessionDataDTO>> getCurrentUsersActiveJwts() {
 
-        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (principal == null) {
-            throw new BadAuthenticationException("Principal is null, authentication is malformed.");
+        // Check if Auth is null OR if the Principal isn't the custom principal.
+        if (auth == null || !(auth.getPrincipal() instanceof CloudaryUserPrincipal principal)) {
+            throw new BadAuthenticationException("User is not authenticated or principal is malformed.");
         }
 
         var jwts = jwtService.getActiveJwtsByUserId(principal.getUserId());
@@ -93,9 +95,10 @@ public class AuthController {
     @GetMapping
     public String testProtected() {
 
-        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (principal == null) {
+        // Check if Auth is null OR if the Principal isn't the custom principal.
+        if (auth == null || !(auth.getPrincipal() instanceof CloudaryUserPrincipal principal)) {
             return "Principal is null.";
         }
 
