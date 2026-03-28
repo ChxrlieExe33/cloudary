@@ -6,10 +6,13 @@ import com.cdcrane.cloudary.auth.dto.RefreshJwtData;
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
 import com.cdcrane.cloudary.auth.enums.JwtTypes;
 import com.cdcrane.cloudary.auth.enums.NamedJwtClaims;
+import com.cdcrane.cloudary.auth.exceptions.BadAuthenticationException;
 import com.cdcrane.cloudary.auth.exceptions.BadJwtException;
+import com.cdcrane.cloudary.auth.exceptions.NotPermittedToRevokeAuthException;
 import com.cdcrane.cloudary.auth.exceptions.TokenNotFoundException;
 import com.cdcrane.cloudary.users.api.UserUseCase;
 import com.cdcrane.cloudary.users.dto.UserDTO;
+import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -297,6 +301,27 @@ public class JwtService implements JwtUseCase {
                 .orElseThrow(() -> new TokenNotFoundException("Refresh token not found on server, it has most likely been revoked already."));
 
         refreshTokenRepo.delete(token);
+
+    }
+
+    @Override
+    @Transactional
+    public void invalidateRefreshToken(UUID jti) {
+
+        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal == null) {
+            throw new BadAuthenticationException("Principal is null, authentication is malformed.");
+        }
+
+        var refreshToken = refreshTokenRepo.findByJti(jti)
+                .orElseThrow(() -> new TokenNotFoundException("Refresh token not found on server, it has most likely been revoked already."));
+
+        if (!refreshToken.getUserId().equals(principal.getUserId())) {
+            throw new NotPermittedToRevokeAuthException("User " + principal.getUserId() + " is not permitted to revoke refresh token " + jti + " owned by user " + refreshToken.getUserId() + "since they are not the owner.");
+        }
+
+        refreshTokenRepo.delete(refreshToken);
 
     }
 

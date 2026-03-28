@@ -29,5 +29,7 @@ public interface JwtUseCase {
 
     void invalidateRefreshToken(String refreshToken);
 
+    void invalidateRefreshToken(UUID jti);
+
     List<JwtClientSessionDataDTO> getActiveJwtsByUserId(UUID userId);
 }

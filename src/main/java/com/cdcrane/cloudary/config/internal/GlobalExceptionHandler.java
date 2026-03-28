@@ -2,6 +2,7 @@ package com.cdcrane.cloudary.config.internal;
 
 import com.cdcrane.cloudary.auth.exceptions.BadAuthenticationException;
 import com.cdcrane.cloudary.auth.exceptions.BadJwtException;
+import com.cdcrane.cloudary.auth.exceptions.NotPermittedToRevokeAuthException;
 import com.cdcrane.cloudary.auth.exceptions.TokenNotFoundException;
 import com.cdcrane.cloudary.config.dto.ExceptionErrorResponse;
 import com.cdcrane.cloudary.config.dto.ValidationErrorResponse;
@@ -153,6 +154,16 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
 
+    }
+
+    @ExceptionHandler(NotPermittedToRevokeAuthException.class)
+    public ResponseEntity<ExceptionErrorResponse> handleNotPermittedToRevokeAuth(NotPermittedToRevokeAuthException ex) {
+        ExceptionErrorResponse res = ExceptionErrorResponse.builder()
+                .message(ex.getMessage())
+                .errorCode(HttpStatus.FORBIDDEN.value())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.FORBIDDEN);
     }
 
     // ---------------------------------------------------

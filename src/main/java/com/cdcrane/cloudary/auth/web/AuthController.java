@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -77,6 +78,15 @@ public class AuthController {
         var jwts = jwtService.getActiveJwtsByUserId(principal.getUserId());
 
         return ResponseEntity.ok(jwts);
+
+    }
+
+    @DeleteMapping("/sessions/{jti}")
+    public ResponseEntity<Void> invalidateRefreshJwt(@PathVariable UUID jti) {
+
+        jwtService.invalidateRefreshToken(jti);
+
+        return ResponseEntity.noContent().build();
 
     }
 
