@@ -27,4 +27,6 @@ public class RefreshTokenEntry {
     private Date expiry;
 
     private UUID userId;
+
+    private String userAgent;
 }

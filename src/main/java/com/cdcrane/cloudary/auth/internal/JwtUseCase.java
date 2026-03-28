@@ -23,7 +23,7 @@ public interface JwtUseCase {
 
     TokenPairResponse refreshBothTokens(String refreshToken);
 
-    void persistNewRefreshToken(RefreshJwtData refreshJwtData);
+    void persistNewRefreshToken(RefreshJwtData refreshJwtData, String userAgent);
 
     void invalidateRefreshToken(String refreshToken);
 }

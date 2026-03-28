@@ -240,7 +240,7 @@ public class JwtService implements JwtUseCase {
         var newAccessTokenData = this.createAccessJwt(user.username(), user.authorities(), userId);
         var newRefreshTokenData = this.createRefreshJwt(userId);
 
-        persistNewRefreshToken(newRefreshTokenData);
+        persistNewRefreshToken(newRefreshTokenData, originalRefreshEntry.getUserAgent());
         refreshTokenRepo.delete(originalRefreshEntry);
 
         return new TokenPairResponse(newAccessTokenData, newRefreshTokenData);
@@ -248,7 +248,7 @@ public class JwtService implements JwtUseCase {
     }
 
     @Override
-    public void persistNewRefreshToken(RefreshJwtData refreshJwtData) {
+    public void persistNewRefreshToken(RefreshJwtData refreshJwtData, String userAgent) {
 
         try {
 
@@ -266,6 +266,7 @@ public class JwtService implements JwtUseCase {
                     .hashedToken(hashedRefreshToken)
                     .expiry(refreshJwtData.expiration())
                     .userId(refreshJwtData.userId())
+                    .userAgent(userAgent)
                     .build();
 
             refreshTokenRepo.save(newRefreshEntry);

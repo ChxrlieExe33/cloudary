@@ -4,7 +4,7 @@ import com.cdcrane.cloudary.auth.dto.LoginRequest;
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
 import com.cdcrane.cloudary.auth.exceptions.BadJwtException;
 import com.cdcrane.cloudary.auth.internal.AuthService;
-import com.cdcrane.cloudary.auth.internal.JwtService;
+import com.cdcrane.cloudary.auth.internal.JwtUseCase;
 import com.cdcrane.cloudary.users.principal.CloudaryUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +19,12 @@ public class AuthController {
 
     private final String BEARER = "Bearer ";
     private final AuthService authService;
-    private final JwtService jwtService;
+    private final JwtUseCase jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenPairResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
+    public ResponseEntity<TokenPairResponse> login(@RequestBody @Valid LoginRequest loginRequest, @RequestHeader(name = "User-Agent") String userAgent) {
 
-        var tokens = authService.login(loginRequest.usernameOrEmail(), loginRequest.password());
+        var tokens = authService.login(loginRequest.usernameOrEmail(), loginRequest.password(), userAgent);
 
         return ResponseEntity.ok(tokens);
 

@@ -21,7 +21,14 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUseCase jwtUseCase;
 
-    public TokenPairResponse login(String usernameOrEmail, String password) {
+    /**
+     * Authenticates the user and returns the access and refresh tokens.
+     * @param usernameOrEmail Username or email, both are accepted.
+     * @param password Plaintext password.
+     * @param userAgent User agent of the client, obtained from the request header usually.
+     * @return The pair of tokens.
+     */
+    public TokenPairResponse login(String usernameOrEmail, String password, String userAgent) {
 
         Authentication auth = new UsernamePasswordAuthenticationToken(usernameOrEmail, password);
 
@@ -38,7 +45,7 @@ public class AuthService {
             var accessTokenData = jwtUseCase.createAccessJwt(authentication, principal.getUserId());
             var refreshTokenData = jwtUseCase.createRefreshJwt(principal.getUserId());
 
-            jwtUseCase.persistNewRefreshToken(refreshTokenData);
+            jwtUseCase.persistNewRefreshToken(refreshTokenData, userAgent);
 
             return new  TokenPairResponse(accessTokenData, refreshTokenData);
 
