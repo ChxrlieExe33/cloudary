@@ -1,7 +1,9 @@
 package com.cdcrane.cloudary.auth.web;
 
+import com.cdcrane.cloudary.auth.dto.JwtClientSessionDataDTO;
 import com.cdcrane.cloudary.auth.dto.LoginRequest;
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
+import com.cdcrane.cloudary.auth.exceptions.BadAuthenticationException;
 import com.cdcrane.cloudary.auth.exceptions.BadJwtException;
 import com.cdcrane.cloudary.auth.internal.AuthService;
 import com.cdcrane.cloudary.auth.internal.JwtUseCase;
@@ -11,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -58,6 +62,21 @@ public class AuthController {
         jwtService.invalidateRefreshToken(refreshToken.substring(BEARER.length()));
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<List<JwtClientSessionDataDTO>> getCurrentUsersActiveJwts() {
+
+        CloudaryUserPrincipal principal = (CloudaryUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal == null) {
+            throw new BadAuthenticationException("Principal is null, authentication is malformed.");
+        }
+
+        var jwts = jwtService.getActiveJwtsByUserId(principal.getUserId());
+
+        return ResponseEntity.ok(jwts);
 
     }
 

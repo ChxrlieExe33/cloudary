@@ -29,4 +29,8 @@ public class RefreshTokenEntry {
     private UUID userId;
 
     private String userAgent;
+
+    public boolean isExpired() {
+        return new Date().after(expiry);
+    }
 }

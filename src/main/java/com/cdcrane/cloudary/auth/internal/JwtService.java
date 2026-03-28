@@ -1,6 +1,7 @@
 package com.cdcrane.cloudary.auth.internal;
 
 import com.cdcrane.cloudary.auth.dto.AccessJwtData;
+import com.cdcrane.cloudary.auth.dto.JwtClientSessionDataDTO;
 import com.cdcrane.cloudary.auth.dto.RefreshJwtData;
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
 import com.cdcrane.cloudary.auth.enums.JwtTypes;
@@ -25,10 +26,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -299,6 +297,24 @@ public class JwtService implements JwtUseCase {
                 .orElseThrow(() -> new TokenNotFoundException("Refresh token not found on server, it has most likely been revoked already."));
 
         refreshTokenRepo.delete(token);
+
+    }
+
+    /**
+     * Get the list of active refresh tokens for a user.
+     * No need to check ownership since the user ID is obtained from the JWT, which is tamper proof.
+     * @param userId The ID of the user.
+     * @return The list of active refresh token entries.
+     */
+    @Override
+    public List<JwtClientSessionDataDTO> getActiveJwtsByUserId(UUID userId) {
+
+        List<RefreshTokenEntry> activeJwts = refreshTokenRepo.findByUserId(userId);
+
+        return activeJwts.stream()
+                .filter(j -> !j.isExpired())
+                .map(j -> new JwtClientSessionDataDTO(j.getJti(), j.getExpiry(), j.getUserAgent()))
+                .toList();
 
     }
 

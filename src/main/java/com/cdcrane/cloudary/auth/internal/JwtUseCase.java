@@ -1,11 +1,13 @@
 package com.cdcrane.cloudary.auth.internal;
 
 import com.cdcrane.cloudary.auth.dto.AccessJwtData;
+import com.cdcrane.cloudary.auth.dto.JwtClientSessionDataDTO;
 import com.cdcrane.cloudary.auth.dto.RefreshJwtData;
 import com.cdcrane.cloudary.auth.dto.TokenPairResponse;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,4 +28,6 @@ public interface JwtUseCase {
     void persistNewRefreshToken(RefreshJwtData refreshJwtData, String userAgent);
 
     void invalidateRefreshToken(String refreshToken);
+
+    List<JwtClientSessionDataDTO> getActiveJwtsByUserId(UUID userId);
 }
