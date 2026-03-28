@@ -4,7 +4,8 @@ import org.springframework.modulith.ApplicationModule;
 
 @ApplicationModule(allowedDependencies = {
         "files::events",
-        "files::api"
+        "files::api",
+        "users::principal"
 })
 public class SearchModule {
 }
